@@ -9,5 +9,5 @@ sudo apt-get update
 sudo apt-get install android-tools-adb
 ```
 
-Enabled adb on firestick: 
+Enable adb on firestick: 
   https://developer.amazon.com/docs/fire-tv/connecting-adb-to-device.html
