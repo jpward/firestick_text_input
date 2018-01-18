@@ -36,13 +36,11 @@ declare -A SEARCH_CHARS=( ["A"]=101 ["B"]=102 ["C"]=103 ["D"]=104 ["E"]=105 ["F"
 
 #get into search menu
 IP="192.168.1.113"
-adb devices -l | grep "$IP" | xargs -0 test -z && adb connect $IP
+adb devices -l | grep "$IP" | xargs -0 test -z && adb connect $IP && sleep 3
 adb shell dumpsys power | grep "Display Power: state=ON" | xargs -0 test -z && adb shell input keyevent 26
 adb shell input keyevent 3
 sleep 3
 echo -e "input keyevent 21\ninput keyevent 20\nexit" | adb shell
-#adb shell input keyevent 21
-#adb shell input keyevent 20
 sleep 1
 
 CURR_ROW=1
@@ -92,24 +90,21 @@ for c in `grep -o . <<< $INPUT`; do
 
   while [ $UP_DOWN -gt 0 ]; do
     adb shell input keyevent 20 &
-    sleep $KEY_DELAY
     UP_DOWN=$(($UP_DOWN - 1))
   done
   while [ $UP_DOWN -lt 0 ]; do
     adb shell input keyevent 19 &
-    sleep $KEY_DELAY
     UP_DOWN=$(($UP_DOWN + 1))
   done
   while [ $LEFT_RIGHT -gt 0 ]; do
     adb shell input keyevent 22 &
-    sleep $KEY_DELAY
     LEFT_RIGHT=$(($LEFT_RIGHT - 1))
   done
   while [ $LEFT_RIGHT -lt 0 ]; do
     adb shell input keyevent 21 &
-    sleep $KEY_DELAY
     LEFT_RIGHT=$(($LEFT_RIGHT + 1))
   done
+  sleep $KEY_DELAY
   adb shell input keyevent 66 &
   sleep $KEY_DELAY
 
@@ -121,12 +116,12 @@ done
 UP_DOWN=$((4 - $CURR_ROW))
 while [ $UP_DOWN -gt 0 ]; do
   adb shell input keyevent 20 &
-  sleep $KEY_DELAY
   UP_DOWN=$(($UP_DOWN - 1))
 done
+sleep 1
 adb shell input keyevent 66
 sleep 1
 adb shell input keyevent 66
-sleep 3
+sleep 2.5
 adb shell input keyevent 66
 
