@@ -86,25 +86,38 @@ for c in `grep -o . <<< $INPUT`; do
   #right 22
   #enter 66
 
+  #The firestick input buffer seems to be around 50 actions, keep count so we can sleep a bit as to not overflow.
+  COUNT=0
   while [ $UP_DOWN -gt 0 ]; do
     adb shell input keyevent 20 &
     UP_DOWN=$(($UP_DOWN - 1))
+    COUNT=$(($COUNT + 1))
   done
   while [ $UP_DOWN -lt 0 ]; do
     adb shell input keyevent 19 &
     UP_DOWN=$(($UP_DOWN + 1))
+    COUNT=$(($COUNT + 1))
   done
   while [ $LEFT_RIGHT -gt 0 ]; do
     adb shell input keyevent 22 &
     LEFT_RIGHT=$(($LEFT_RIGHT - 1))
+    COUNT=$(($COUNT + 1))
   done
   while [ $LEFT_RIGHT -lt 0 ]; do
     adb shell input keyevent 21 &
     LEFT_RIGHT=$(($LEFT_RIGHT + 1))
+    COUNT=$(($COUNT + 1))
   done
   sleep $KEY_DELAY
   adb shell input keyevent 66 &
+  COUNT=$(($COUNT + 1))
   sleep $KEY_DELAY
+
+  #Nearing buffer limit sleep for a few to let it settle
+  if [ $COUNT -gt 40 ]; then
+    COUNT=0
+    sleep 1
+  fi
 
   CURR_ROW=$NEW_ROW
   CURR_COL=$NEW_COL
