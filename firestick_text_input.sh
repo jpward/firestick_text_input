@@ -4,7 +4,7 @@ set -e
 
 HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
-KEY_DELAY="0.5"
+KEY_DELAY="0.6"
 
 #INPUT="Trolls on Netflix"
 #INPUT="Trolls"
@@ -22,8 +22,6 @@ INPUT=${INPUT//-/_}
 
 #Make input all uppercase
 INPUT=${INPUT^^}
-
-echo $INPUT > $HERE/temp.txt
 
 #The Firestick search bar looks like:
 #A B C D E F G H I J K L M
