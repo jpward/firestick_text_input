@@ -35,7 +35,7 @@ declare -A SEARCH_CHARS=( ["A"]=101 ["B"]=102 ["C"]=103 ["D"]=104 ["E"]=105 ["F"
 #get into search menu
 IP="192.168.1.113"
 adb devices -l | grep "$IP" | xargs -0 test -z && adb connect $IP && sleep 3
-adb shell dumpsys power | grep "Display Power: state=ON" | xargs -0 test -z && adb shell input keyevent 26
+adb shell dumpsys power | grep "Display Power: state=ON" | xargs -0 test -z && adb shell input keyevent 26 && sleep 3
 adb shell input keyevent 3
 sleep 3
 echo -e "input keyevent 21\ninput keyevent 20\nexit" | adb shell
