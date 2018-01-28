@@ -5,23 +5,54 @@ set -e
 HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
 KEY_DELAY="0.6"
+IP="192.168.1.113"
 
 #INPUT="Trolls on Netflix"
 #INPUT="Trolls"
 INPUT="$1"
 
-#Make all spaces underscores
-INPUT=${INPUT// /_}
-
 #Remove single quote
 INPUT=${INPUT//\'/}
-INPUT=${INPUT//_&#39;_/}
+INPUT=${INPUT// &#39; /}
 
 #Replace dash with space
-INPUT=${INPUT//-/_}
+INPUT=${INPUT//-/ }
 
 #Make input all uppercase
 INPUT=${INPUT^^}
+
+#Create array of input
+ARR_INPUT=( $INPUT )
+
+adb devices -l | grep "$IP" | xargs -0 test -z && adb connect $IP && sleep 3
+adb shell dumpsys power | grep "Display Power: state=ON" | xargs -0 test -z && adb shell input keyevent 26 && sleep 5
+if [ "${ARR_INPUT[0]}" = "PRESS" ] && echo "${ARR_INPUT[1]}" | grep -q "RIGHT\|LEFT\|UP\|DOWN\|OKAY\|SELECT\|MENU\|ENTER" ; then
+  for b in ${ARR_INPUT[@]}; do
+    if [ "$b" = "PRESS" ]; then
+      echo ""
+    elif [ "$b" = "UP" ]; then
+      adb shell input keyevent 19
+    elif [ "$b" = "DOWN" ]; then
+      adb shell input keyevent 20
+    elif [ "$b" = "LEFT" ]; then
+      adb shell input keyevent 21
+    elif [ "$b" = "RIGHT" ]; then
+      adb shell input keyevent 22
+    elif [ "$b" = "MENU" ]; then
+      adb shell input keyevent 3
+    elif [ "$b" = "OKAY" ]; then
+      adb shell input keyevent 66
+    elif [ "$b" = "SELECT" ]; then
+      adb shell input keyevent 66
+    elif [ "$b" = "ENTER" ]; then
+      adb shell input keyevent 66
+    fi
+  done
+  exit 0
+fi
+
+#Make all spaces underscores
+INPUT=${INPUT// /_}
 
 #The Firestick search bar looks like:
 #A B C D E F G H I J K L M
@@ -33,9 +64,6 @@ INPUT=${INPUT^^}
 declare -A SEARCH_CHARS=( ["A"]=101 ["B"]=102 ["C"]=103 ["D"]=104 ["E"]=105 ["F"]=106 ["G"]=107 ["H"]=108 ["I"]=109 ["J"]=110 ["K"]=111 ["L"]=112 ["M"]=113 ["N"]=201 ["O"]=202 ["P"]=203 ["Q"]=204 ["R"]=205 ["S"]=206 ["T"]=207 ["U"]=208 ["V"]=209 ["W"]=210 ["X"]=211 ["Y"]=212 ["Z"]=213 ["1"]=301 ["2"]=302 ["3"]=303 ["4"]=304 ["5"]=305 ["6"]=306 ["7"]=307 ["8"]=308 ["9"]=309 ["0"]=310 ["-"]=311 ["_"]=312 )
 
 #get into search menu
-IP="192.168.1.113"
-adb devices -l | grep "$IP" | xargs -0 test -z && adb connect $IP && sleep 3
-adb shell dumpsys power | grep "Display Power: state=ON" | xargs -0 test -z && adb shell input keyevent 26 && sleep 5
 adb shell input keyevent 3
 sleep 3
 echo -e "input keyevent 21\ninput keyevent 20\nexit" | adb shell
@@ -138,7 +166,7 @@ while ps -p $PIDS; do
 done
 sleep 0.1
 adb shell input keyevent 66
-sleep 1
+sleep 2
 adb shell input keyevent 66
 sleep 2.5
 adb shell input keyevent 66
