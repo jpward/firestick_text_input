@@ -91,15 +91,24 @@ for c in `grep -o . <<< $INPUT`; do
   UP_DOWN=$(($NEW_ROW - $CURR_ROW))
   LEFT_RIGHT=$(($NEW_COL - $CURR_COL))
 
+  #the following if statements are needed to fix oddities around space
   if [ $CURR_ROW -eq 3 ] && [ $CURR_COL -eq 12 ] && [ $UP_DOWN -lt 0 ]; then
     LEFT_RIGHT=$((LEFT_RIGHT - 1))
+  fi
+
+  if [ $CURR_ROW -eq 1 ] && [ $CURR_COL -eq 12 ] && [ $UP_DOWN -eq 2 ]; then
+    LEFT_RIGHT=$((LEFT_RIGHT + 1))
   fi
 
   if [ $CURR_ROW -eq 2 ] && [ $CURR_COL -eq 12 ] && [ $UP_DOWN -eq 1 ]; then
     LEFT_RIGHT=$((LEFT_RIGHT + 1))
   fi
 
-  if [ $CURR_ROW -eq 1 ] && [ $CURR_COL -eq 12 ] && [ $UP_DOWN -eq 2 ]; then
+  if [ $CURR_ROW -eq 1 ] && [ $CURR_COL -eq 13 ] && [ $UP_DOWN -eq 2 ]; then
+    LEFT_RIGHT=$((LEFT_RIGHT + 1))
+  fi
+
+  if [ $CURR_ROW -eq 2 ] && [ $CURR_COL -eq 13 ] && [ $UP_DOWN -eq 1 ]; then
     LEFT_RIGHT=$((LEFT_RIGHT + 1))
   fi
 
