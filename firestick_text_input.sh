@@ -95,6 +95,14 @@ for c in `grep -o . <<< $INPUT`; do
     LEFT_RIGHT=$((LEFT_RIGHT - 1))
   fi
 
+  if [ $CURR_ROW -eq 2 ] && [ $CURR_COL -eq 12 ] && [ $UP_DOWN -eq 1 ]; then
+    LEFT_RIGHT=$((LEFT_RIGHT + 1))
+  fi
+
+  if [ $CURR_ROW -eq 1 ] && [ $CURR_COL -eq 12 ] && [ $UP_DOWN -eq 2 ]; then
+    LEFT_RIGHT=$((LEFT_RIGHT + 1))
+  fi
+
   if [ $NEW_ROW -eq 3 ]; then
     if [ $LEFT_RIGHT -gt 6 ]; then
       LEFT_RIGHT=$((LEFT_RIGHT - 12))
@@ -166,8 +174,8 @@ while ps -p $PIDS; do
 done
 sleep 0.1
 adb shell input keyevent 66
-sleep 2
+sleep 3
 adb shell input keyevent 66
-sleep 2.5
+sleep 3
 adb shell input keyevent 66
 
