@@ -5,10 +5,19 @@ set -e
 HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
 
 #convenience fn to convert ascii to adb character num
+ADB_0=7
 ADB_A=29
-DIFF=$(($(printf "%d" "'A") - $ADB_A))
+ADB_SPACE=62
+NUM_DIFF=$(($(printf "%d" "'0") - $ADB_0))
+LETTER_DIFF=$(($(printf "%d" "'A") - $ADB_A))
 l2n() {
-  echo $(($(printf "%d" "'$1") - $DIFF))
+  if [ "_" = "$1" ]; then
+    echo ${ADB_SPACE}
+  elif ( grep -qo "[0-9]" <<< $1 ); then
+    echo $(($(printf "%d" "'$1") - $NUM_DIFF))
+  else
+    echo $(($(printf "%d" "'$1") - $LETTER_DIFF))
+  fi
 }
 
 KEY_DELAY="0.6"
