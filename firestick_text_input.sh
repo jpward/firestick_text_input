@@ -1,8 +1,15 @@
-#!/bin/bash
+#!/bin/bash -x
 
 set -e
 
 HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd)"
+
+#convenience fn to convert ascii to adb character num
+ADB_A=29
+DIFF=$(($(printf "%d" "'A") - $ADB_A))
+l2n() {
+  echo $(($(printf "%d" "'$1") - $DIFF))
+}
 
 KEY_DELAY="0.6"
 IP="192.168.1.113"
@@ -26,7 +33,7 @@ ARR_INPUT=( $INPUT )
 
 adb devices -l | grep "$IP" | xargs -0 test -z && adb connect $IP && sleep 3
 adb shell dumpsys power | grep "Display Power: state=ON" | xargs -0 test -z && adb shell input keyevent 26 && sleep 5
-if [ "${ARR_INPUT[0]}" = "PRESS" ] && echo "${ARR_INPUT[1]}" | grep -q "RIGHT\|LEFT\|UP\|DOWN\|OKAY\|SELECT\|MENU\|ENTER" ; then
+if [ "${ARR_INPUT[0]}" = "PRESS" ] && echo "${ARR_INPUT[1]}" | grep -q "RIGHT\|LEFT\|UP\|DOWN\|OKAY\|SELECT\|MENU\|ENTER\|REBOOT\|RESTART" ; then
   for b in ${ARR_INPUT[@]}; do
     if [ "$b" = "PRESS" ]; then
       echo ""
@@ -40,12 +47,18 @@ if [ "${ARR_INPUT[0]}" = "PRESS" ] && echo "${ARR_INPUT[1]}" | grep -q "RIGHT\|L
       adb shell input keyevent 22
     elif [ "$b" = "MENU" ]; then
       adb shell input keyevent 3
+    elif [ "$b" = "BACK" ]; then
+      adb shell input keyevent 4
     elif [ "$b" = "OKAY" ]; then
       adb shell input keyevent 66
     elif [ "$b" = "SELECT" ]; then
       adb shell input keyevent 66
     elif [ "$b" = "ENTER" ]; then
       adb shell input keyevent 66
+    elif [ "$b" = "REBOOT" ]; then
+      adb shell reboot
+    elif [ "$b" = "RESTART" ]; then
+      adb shell reboot
     fi
   done
   exit 0
@@ -70,61 +83,10 @@ echo -e "input keyevent 21\ninput keyevent 20\nexit" | adb shell
 sleep 1
 
 CURR_ROW=1
-CURR_COL=1
-SLEEP="0.0"
 PIDS=""
 for c in `grep -o . <<< $INPUT`; do
-  #echo $c=${SEARCH_CHARS[$c]}
-  NEW_ROW=1
-  NEW_COL=1
-  if [ ${SEARCH_CHARS[$c]} -gt 299 ]; then
-    NEW_ROW=3
-    NEW_COL=$((${SEARCH_CHARS[$c]} -  300))
-  elif [ ${SEARCH_CHARS[$c]} -gt 199 ]; then
-    NEW_ROW=2
-    NEW_COL=$((${SEARCH_CHARS[$c]} -  200))
-  else
-    NEW_ROW=1
-    NEW_COL=$((${SEARCH_CHARS[$c]} -  100))
-  fi
-
-  UP_DOWN=$(($NEW_ROW - $CURR_ROW))
-  LEFT_RIGHT=$(($NEW_COL - $CURR_COL))
-
-  #the following if statements are needed to fix oddities around space
-  if [ $CURR_ROW -eq 3 ] && [ $CURR_COL -eq 12 ] && [ $UP_DOWN -lt 0 ]; then
-    LEFT_RIGHT=$((LEFT_RIGHT - 1))
-  fi
-
-  if [ $CURR_ROW -eq 1 ] && [ $CURR_COL -eq 12 ] && [ $UP_DOWN -eq 2 ]; then
-    LEFT_RIGHT=$((LEFT_RIGHT + 1))
-  fi
-
-  if [ $CURR_ROW -eq 2 ] && [ $CURR_COL -eq 12 ] && [ $UP_DOWN -eq 1 ]; then
-    LEFT_RIGHT=$((LEFT_RIGHT + 1))
-  fi
-
-  if [ $CURR_ROW -eq 1 ] && [ $CURR_COL -eq 13 ] && [ $UP_DOWN -eq 2 ]; then
-    LEFT_RIGHT=$((LEFT_RIGHT + 1))
-  fi
-
-  if [ $CURR_ROW -eq 2 ] && [ $CURR_COL -eq 13 ] && [ $UP_DOWN -eq 1 ]; then
-    LEFT_RIGHT=$((LEFT_RIGHT + 1))
-  fi
-
-  if [ $NEW_ROW -eq 3 ]; then
-    if [ $LEFT_RIGHT -gt 6 ]; then
-      LEFT_RIGHT=$((LEFT_RIGHT - 12))
-    elif [ $LEFT_RIGHT -lt -6 ]; then
-      LEFT_RIGHT=$((LEFT_RIGHT + 12))
-    fi
-  else
-    if [ $LEFT_RIGHT -gt 6 ]; then
-      LEFT_RIGHT=$((LEFT_RIGHT - 13))
-    elif [ $LEFT_RIGHT -lt -6 ]; then
-      LEFT_RIGHT=$((LEFT_RIGHT + 13))
-    fi
-  fi
+  adb shell input keyevent $(l2n $c) &
+  sleep $KEY_DELAY
 
   #home 3
   #up 19
@@ -132,45 +94,15 @@ for c in `grep -o . <<< $INPUT`; do
   #left 21
   #right 22
   #enter 66
-
-  while [ $UP_DOWN -gt 0 ]; do
-    adb shell input keyevent 20 &
-    PIDS="$PIDS $!"
-    UP_DOWN=$(($UP_DOWN - 1))
-  done
-  while [ $UP_DOWN -lt 0 ]; do
-    adb shell input keyevent 19 &
-    PIDS="$PIDS $!"
-    sleep $SLEEP
-    SLEEP="0.0"
-    UP_DOWN=$(($UP_DOWN + 1))
-  done
-  while [ $LEFT_RIGHT -gt 0 ]; do
-    adb shell input keyevent 22 &
-    PIDS="$PIDS $!"
-    LEFT_RIGHT=$(($LEFT_RIGHT - 1))
-  done
-  while [ $LEFT_RIGHT -lt 0 ]; do
-    adb shell input keyevent 21 &
-    PIDS="$PIDS $!"
-    LEFT_RIGHT=$(($LEFT_RIGHT + 1))
-  done
-  while ps -p $PIDS; do
-    sleep 0.1
-  done
-  sleep 0.1
-  PIDS=""
-  adb shell input keyevent 66 &
-  sleep $KEY_DELAY
-
-  CURR_ROW=$NEW_ROW
-  CURR_COL=$NEW_COL
-
-  if [ $CURR_ROW -eq 3 ] && [ $CURR_COL -eq 12 ] && [ $UP_DOWN -lt 0 ]; then
-    SLEEP="$KEY_DELAY"
-  fi
 done
 
+if [ ${SEARCH_CHARS[$c]} -gt 299 ]; then
+  CURR_ROW=3
+elif [ ${SEARCH_CHARS[$c]} -gt 199 ]; then
+  CURR_ROW=2
+else
+  CURR_ROW=1
+fi
 
 UP_DOWN=$((4 - $CURR_ROW))
 while [ $UP_DOWN -gt 0 ]; do
@@ -185,6 +117,6 @@ sleep 0.1
 adb shell input keyevent 66
 sleep 3
 adb shell input keyevent 66
-sleep 3
+sleep 3.5
 adb shell input keyevent 66
 

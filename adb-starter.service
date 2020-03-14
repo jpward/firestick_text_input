@@ -1,0 +1,12 @@
+[Unit]
+Description=Android Debug Server Daemon
+After=network.target
+
+[Service]
+Type=simple
+User=root
+ExecStart=/usr/bin/adb -P 5037 fork-server server
+ExecStop=/usr/bin/adb kill-server
+
+[Install]
+WantedBy=multi-user.target
