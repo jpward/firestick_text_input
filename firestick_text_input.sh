@@ -42,7 +42,7 @@ ARR_INPUT=( $INPUT )
 
 adb devices -l | grep "$IP" | xargs -0 test -z && adb connect $IP && sleep 3
 adb shell dumpsys power | grep "Display Power: state=ON" | xargs -0 test -z && adb shell input keyevent 26 && sleep 5
-if [ "${ARR_INPUT[0]}" = "PRESS" ] && echo "${ARR_INPUT[1]}" | grep -q "RIGHT\|LEFT\|UP\|DOWN\|OKAY\|SELECT\|MENU\|ENTER\|REBOOT\|RESTART" ; then
+if [ "${ARR_INPUT[0]}" = "PRESS" ] && echo "${ARR_INPUT[1]}" | grep -q "RIGHT\|LEFT\|UP\|DOWN\|OKAY\|SELECT\|MENU\|HOME\|ENTER\|SLEEP\|REBOOT\|RESTART" ; then
   for b in ${ARR_INPUT[@]}; do
     if [ "$b" = "PRESS" ]; then
       echo ""
@@ -56,6 +56,8 @@ if [ "${ARR_INPUT[0]}" = "PRESS" ] && echo "${ARR_INPUT[1]}" | grep -q "RIGHT\|L
       adb shell input keyevent 22
     elif [ "$b" = "MENU" ]; then
       adb shell input keyevent 3
+    elif [ "$b" = "HOME" ]; then
+      adb shell input keyevent 3
     elif [ "$b" = "BACK" ]; then
       adb shell input keyevent 4
     elif [ "$b" = "OKAY" ]; then
@@ -64,10 +66,22 @@ if [ "${ARR_INPUT[0]}" = "PRESS" ] && echo "${ARR_INPUT[1]}" | grep -q "RIGHT\|L
       adb shell input keyevent 66
     elif [ "$b" = "ENTER" ]; then
       adb shell input keyevent 66
+    elif [ "$b" = "PLAY" ]; then
+      adb shell input keyevent 85 
+    elif [ "$b" = "PAUSE" ]; then
+      adb shell input keyevent 85 
+    elif [ "$b" = "SLEEP" ]; then
+      adb shell input keyevent 26
     elif [ "$b" = "REBOOT" ]; then
-      adb shell reboot
+      adb shell reboot &
+      PID=$!
+      sleep 3
+      kill -0 $PID && kill -9 $PID
     elif [ "$b" = "RESTART" ]; then
-      adb shell reboot
+      adb shell reboot &
+      PID=$!
+      sleep 3
+      kill -0 $PID && kill -9 $PID
     fi
   done
   exit 0
@@ -88,7 +102,7 @@ declare -A SEARCH_CHARS=( ["A"]=101 ["B"]=102 ["C"]=103 ["D"]=104 ["E"]=105 ["F"
 #get into search menu
 adb shell input keyevent 3
 sleep 3
-echo -e "input keyevent 21\ninput keyevent 20\nexit" | adb shell
+echo -e "input keyevent 22\ninput keyevent 66\ninput keyevent 20\ninput keyevent 66\nexit" | adb shell
 sleep 1
 
 CURR_ROW=1
